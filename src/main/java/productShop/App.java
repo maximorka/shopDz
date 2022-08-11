@@ -1,27 +1,25 @@
 package productShop;
 
-import productShop.Products.Action;
-import productShop.Products.Product;
+import productShop.dao.ProductDao;
+import productShop.entity.Action;
+import productShop.entity.Product;
+import productShop.storage.Init.DataBaseInit;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static productShop.storage.Storage.connectionURL;
+
 public class App {
-    List<Product> productsInShop = new ArrayList();
 
-    public App() {
-        productsInShop.add(Product.builder().name("A").price(1.25f).action(Action.builder().price(1.0f).ruleForMinCount(3).build()).build());
-        productsInShop.add(Product.builder().name("B").price(4.25f).build());
-        productsInShop.add(Product.builder().name("C").price(1.0f).action(Action.builder().price(0.8f).ruleForMinCount(6).build()).build());
-        productsInShop.add(Product.builder().name("D").price(0.75f).build());
-    }
-
+    ProductDao productDao = new ProductDao();
 
     public float calculateCostBasket(String basket) {
         String checkBasket = basket.replace(" ", "");
         if (!checkCorrectBasket(checkBasket))
-            throw new IllegalArgumentException("Invalid input data:"+basket);
-        return calculate(productsInShop, basket);
+            throw new IllegalArgumentException("Invalid input data:" + basket);
+        return calculate(productDao.getAllProduct(), basket);
+
     }
 
     float calculate(List<Product> products, String basket) {
@@ -37,10 +35,12 @@ public class App {
 
     float getActualPriceWithAction(List<Product> allProductsInShop, int productIndex, int count) {
         float price = allProductsInShop.get(productIndex).getPrice();
-        if (allProductsInShop.get(productIndex).getAction() != null)
-            if (allProductsInShop.get(productIndex).getAction().getRuleForMinCount() <= count)
-                price = allProductsInShop.get(productIndex).getAction().getPrice();
-        return price;
+        if (allProductsInShop.get(productIndex).getAction() != null) {
+            Action action = allProductsInShop.get(productIndex).getAction();
+            if (action.getRule() <= count)
+                price = action.getPrice();
+        }
+            return price;
     }
 
     int getCountSameProduct(String basket, String product) {
@@ -58,8 +58,8 @@ public class App {
     }
 
     public static void main(String[] args) {
+        new DataBaseInit().initDB(connectionURL);
         App app = new App();
         System.out.println("Cost:" + app.calculateCostBasket(" ABC  DABA "));
     }
-
 }

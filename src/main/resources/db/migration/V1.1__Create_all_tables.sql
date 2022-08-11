@@ -1,0 +1,14 @@
+CREATE TABLE action_product(
+  id IDENTITY PRIMARY KEY,
+  rule INTEGER NOT NULL,
+  price FLOAT NOT NULL
+  );
+
+CREATE TABLE product(
+name VARCHAR(100) PRIMARY KEY,
+price FLOAT NOT NULL,
+action BIGINT,
+FOREIGN KEY (action) REFERENCES action_product(id) ON DELETE CASCADE
+);
+
+
